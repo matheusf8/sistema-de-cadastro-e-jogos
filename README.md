@@ -204,3 +204,5 @@ Edite o arquivo `.env` no backend para customizar:
 ## 📄 Licença
 
 Este projeto é fornecido como está para fins educacionais.
+# sistema-de-cadastro-e-jogos
+Uma plataforma full-stack com autenticação de usuários, gerenciamento de notas e mini-games (Snake e Calculadora).
