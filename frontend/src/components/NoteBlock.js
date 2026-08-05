@@ -3,7 +3,7 @@
  * CRUD completo de notas com interface intuitiva
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -21,7 +21,6 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
-  Divider,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,27 +33,35 @@ const NoteBlock = () => {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [deletingId, setDeletingId] = useState(null);
+  const [noteToDelete, setNoteToDelete] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({ title: '', content: '' });
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
-  // Carregar notas
-  useEffect(() => {
-    loadNotes();
-  }, [user]);
-
-  const loadNotes = async () => {
+  const loadNotes = useCallback(async () => {
     try {
       setLoading(true);
       const response = await notesAPI.getNotes();
       setNotes(response.data);
     } catch (error) {
       console.error('Erro ao carregar notas:', error);
+      showSnackbar('Erro ao carregar notas', 'error');
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Carregar notas sempre que o usuário autenticado mudar
+  useEffect(() => {
+    loadNotes();
+  }, [user, loadNotes]);
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   // Abrir dialog para nova nota
@@ -81,34 +88,47 @@ const NoteBlock = () => {
   // Salvar nota
   const handleSaveNote = async () => {
     if (!formData.title.trim()) {
-      alert('O título não pode ser vazio');
+      showSnackbar('O título não pode ser vazio', 'warning');
       return;
     }
 
     try {
       if (editingId) {
         await notesAPI.updateNote(editingId, formData);
+        showSnackbar('Nota atualizada com sucesso');
       } else {
         await notesAPI.createNote(formData);
+        showSnackbar('Nota criada com sucesso');
       }
       loadNotes();
       handleCloseDialog();
     } catch (error) {
       console.error('Erro ao salvar nota:', error);
-      alert('Erro ao salvar nota');
+      showSnackbar('Erro ao salvar nota', 'error');
     }
   };
 
-  // Deletar nota
-  const handleDeleteNote = async (id) => {
-    if (window.confirm('Tem certeza que deseja deletar esta nota?')) {
-      try {
-        await notesAPI.deleteNote(id);
-        loadNotes();
-      } catch (error) {
-        console.error('Erro ao deletar nota:', error);
-        alert('Erro ao deletar nota');
-      }
+  // Pedir confirmação antes de deletar
+  const handleDeleteNote = (note) => {
+    setNoteToDelete(note);
+  };
+
+  const cancelDeleteNote = () => {
+    setNoteToDelete(null);
+  };
+
+  const confirmDeleteNote = async () => {
+    if (!noteToDelete) return;
+
+    try {
+      await notesAPI.deleteNote(noteToDelete.id);
+      loadNotes();
+      showSnackbar('Nota deletada com sucesso');
+    } catch (error) {
+      console.error('Erro ao deletar nota:', error);
+      showSnackbar('Erro ao deletar nota', 'error');
+    } finally {
+      setNoteToDelete(null);
     }
   };
 
@@ -180,7 +200,7 @@ const NoteBlock = () => {
                     <IconButton
                       size="small"
                       aria-label="deletar"
-                      onClick={() => handleDeleteNote(note.id)}
+                      onClick={() => handleDeleteNote(note)}
                       color="error"
                       title="Deletar nota"
                     >
@@ -195,7 +215,7 @@ const NoteBlock = () => {
         </Paper>
       )}
 
-      {/* Dialog */}
+      {/* Dialog de criar/editar */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
           {editingId ? 'Editar Nota' : 'Nova Nota'}
@@ -225,6 +245,34 @@ const NoteBlock = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Dialog de confirmação de exclusão */}
+      <Dialog open={Boolean(noteToDelete)} onClose={cancelDeleteNote} maxWidth="xs" fullWidth>
+        <DialogTitle>Deletar nota?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Tem certeza que deseja deletar "{noteToDelete?.title}"? Essa ação não pode ser desfeita.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={cancelDeleteNote}>Cancelar</Button>
+          <Button onClick={confirmDeleteNote} variant="contained" color="error">
+            Deletar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Feedback de ações */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

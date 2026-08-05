@@ -3,7 +3,7 @@
  */
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -129,7 +129,8 @@ const Register = () => {
           <Typography sx={{ mt: 2, textAlign: 'center' }}>
             Já tem conta?{' '}
             <Link
-              href="/login"
+              component={RouterLink}
+              to="/login"
               sx={{ cursor: 'pointer', fontWeight: 'bold' }}
             >
               Faça login aqui

@@ -15,17 +15,63 @@ import {
   DialogActions,
 } from '@mui/material';
 
+// Configurações do jogo (não dependem de state/props, ficam fora do componente)
+const CANVAS_SIZE = 400;
+const GRID_SIZE = 20;
+const GRID_COUNT = CANVAS_SIZE / GRID_SIZE;
+
+// Desenhar o estado atual do jogo no canvas
+const draw = (ctx, gameState) => {
+  // Limpar canvas
+  ctx.fillStyle = '#f0f0f0';
+  ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+  // Desenhar grade
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= GRID_COUNT; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * GRID_SIZE, 0);
+    ctx.lineTo(i * GRID_SIZE, CANVAS_SIZE);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(0, i * GRID_SIZE);
+    ctx.lineTo(CANVAS_SIZE, i * GRID_SIZE);
+    ctx.stroke();
+  }
+
+  // Desenhar comida
+  ctx.fillStyle = '#FF6B6B';
+  ctx.fillRect(
+    gameState.food.x * GRID_SIZE + 1,
+    gameState.food.y * GRID_SIZE + 1,
+    GRID_SIZE - 2,
+    GRID_SIZE - 2
+  );
+
+  // Desenhar cobra
+  gameState.snake.forEach((segment, index) => {
+    if (index === 0) {
+      ctx.fillStyle = '#4CAF50';
+    } else {
+      ctx.fillStyle = '#81C784';
+    }
+    ctx.fillRect(
+      segment.x * GRID_SIZE + 1,
+      segment.y * GRID_SIZE + 1,
+      GRID_SIZE - 2,
+      GRID_SIZE - 2
+    );
+  });
+};
+
 const SnakeGame = () => {
   const canvasRef = useRef(null);
   const [gameRunning, setGameRunning] = useState(false);
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
-
-  // Configurações do jogo
-  const CANVAS_SIZE = 400;
-  const GRID_SIZE = 20;
-  const GRID_COUNT = CANVAS_SIZE / GRID_SIZE;
 
   // Estado do jogo
   const gameStateRef = useRef({
@@ -35,52 +81,6 @@ const SnakeGame = () => {
     nextDirection: { x: 1, y: 0 },
     score: 0,
   });
-
-  // Desenhar
-  const draw = (ctx, gameState) => {
-    // Limpar canvas
-    ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-
-    // Desenhar grade
-    ctx.strokeStyle = '#ddd';
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i <= GRID_COUNT; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * GRID_SIZE, 0);
-      ctx.lineTo(i * GRID_SIZE, CANVAS_SIZE);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(0, i * GRID_SIZE);
-      ctx.lineTo(CANVAS_SIZE, i * GRID_SIZE);
-      ctx.stroke();
-    }
-
-    // Desenhar comida
-    ctx.fillStyle = '#FF6B6B';
-    ctx.fillRect(
-      gameState.food.x * GRID_SIZE + 1,
-      gameState.food.y * GRID_SIZE + 1,
-      GRID_SIZE - 2,
-      GRID_SIZE - 2
-    );
-
-    // Desenhar cobra
-    gameState.snake.forEach((segment, index) => {
-      if (index === 0) {
-        ctx.fillStyle = '#4CAF50';
-      } else {
-        ctx.fillStyle = '#81C784';
-      }
-      ctx.fillRect(
-        segment.x * GRID_SIZE + 1,
-        segment.y * GRID_SIZE + 1,
-        GRID_SIZE - 2,
-        GRID_SIZE - 2
-      );
-    });
-  };
 
   // Lógica do jogo
   const gameLoop = useRef(() => {
