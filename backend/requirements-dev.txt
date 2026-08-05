@@ -1,0 +1,5 @@
+# Dependências extras para desenvolvimento e testes
+-r requirements.txt
+
+pytest==7.4.3
+httpx==0.25.1
