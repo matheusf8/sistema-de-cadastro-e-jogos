@@ -43,7 +43,7 @@
 
 ## 🧪 Fase 4 - Testes e Qualidade
 
-- [ ] Testes unitários backend (pytest)
+- [x] Testes unitários backend (pytest)
 - [ ] Testes unitários frontend (Jest)
 - [ ] Testes de integração
 - [ ] Testes e2e (Cypress)
@@ -63,7 +63,8 @@
 
 ## 🚀 Fase 6 - Deployment
 
-- [ ] Deploy backend (Heroku/Railway/DigitalOcean)
+- [x] Containerização com Docker (backend + frontend, ver [DEPLOYMENT.md](DEPLOYMENT.md))
+- [ ] Deploy backend (Render/Railway/DigitalOcean)
 - [ ] Deploy frontend (Vercel/Netlify)
 - [ ] Configure HTTPS/SSL
 - [ ] Setup de domínio customizado
@@ -116,5 +117,5 @@
 
 ---
 
-**Última atualização**: 2024
+**Última atualização**: 2026
 **Status**: ✅ MVP Completo - Pronto para uso!

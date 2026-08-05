@@ -121,6 +121,7 @@ npm start
 | [README.md](README.md) | Overview completo do projeto |
 | [QUICKSTART.md](QUICKSTART.md) | Para começar em 5 minutos |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Guia técnico detalhado |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Docker e deploy na nuvem |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | FAQ e debugging |
 | [STRUCTURE.md](STRUCTURE.md) | Explicação da estrutura |
 | [ROADMAP.md](ROADMAP.md) | Planos futuros |
@@ -265,4 +266,4 @@ Este é um projeto **production-ready** que demonstra:
 
 **Versão**: 1.0.0  
 **Status**: ✅ Completo e funcional  
-**Última atualização**: 2024
+**Última atualização**: 2026

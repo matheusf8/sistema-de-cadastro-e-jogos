@@ -59,7 +59,7 @@ PORT=3001 npm start
 **Erro**: `Access to XMLHttpRequest... has been blocked by CORS policy`
 
 **Solução**:
-1. Adicione a origem em `backend/app/core/config.py`
+1. Adicione a origem em `ALLOWED_ORIGINS` no `backend/.env`
 2. Reinicie o backend
 
 ---

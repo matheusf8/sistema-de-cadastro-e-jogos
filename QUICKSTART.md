@@ -70,7 +70,7 @@ npm start
 ## 📂 Estrutura
 
 ```
-Calculadora/
+sistema-de-cadastro-e-jogos/
 ├── backend/          ← API FastAPI
 │   └── app/
 │       ├── models/   ← Modelos BD
@@ -133,6 +133,7 @@ Calculadora/
 
 - [README.md](README.md) - Overview do projeto
 - [DEVELOPMENT.md](DEVELOPMENT.md) - Guia técnico
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Docker e deploy na nuvem
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - FAQ e debugging
 
 ---

@@ -5,7 +5,7 @@ Um sistema completo de cadastro e login com FastAPI no backend e React no fronte
 ## 📋 Estrutura do Projeto
 
 ```
-Calculadora/
+sistema-de-cadastro-e-jogos/
 ├── backend/
 │   ├── app/
 │   │   ├── core/
@@ -22,12 +22,15 @@ Calculadora/
 │   │   ├── services/
 │   │   │   ├── user_service.py    # Lógica de negócio de usuário
 │   │   │   └── note_service.py    # Lógica de negócio de nota
-│   │   └── routes/
-│   │       ├── auth.py            # Rotas de autenticação
-│   │       └── notes.py           # Rotas de notas
-│   ├── main.py                    # Aplicação FastAPI principal
+│   │   ├── routes/
+│   │   │   ├── auth.py            # Rotas de autenticação
+│   │   │   └── notes.py           # Rotas de notas
+│   │   └── main.py                # Aplicação FastAPI (fonte da verdade)
+│   ├── tests/                     # Testes automatizados (pytest)
+│   ├── main.py                    # `python main.py` sobe o servidor de dev
 │   ├── requirements.txt           # Dependências Python
-│   └── .env                       # Variáveis de ambiente
+│   ├── Dockerfile
+│   └── .env                       # Variáveis de ambiente (local, fora do git)
 │
 └── frontend/
     ├── public/
@@ -49,6 +52,7 @@ Calculadora/
     │   │   └── ProtectedRoute.js   # Rota protegida
     │   ├── index.js                # Entrada da aplicação React
     │   └── index.css               # Estilos globais
+    ├── Dockerfile
     └── package.json
 ```
 
@@ -61,13 +65,19 @@ Calculadora/
 
 ### Backend
 
-1. **Instalar dependências**
+1. **Configurar variáveis de ambiente**
 ```bash
 cd backend
+cp .env.example .env
+```
+(os valores padrão já funcionam localmente; para produção, troque o `SECRET_KEY`)
+
+2. **Instalar dependências**
+```bash
 pip install -r requirements.txt
 ```
 
-2. **Executar servidor FastAPI**
+3. **Executar servidor FastAPI**
 ```bash
 python main.py
 ```
@@ -90,6 +100,23 @@ npm start
 ```
 
 A aplicação estará disponível em: `http://localhost:3000`
+
+### 🐳 Ou com Docker (backend + frontend juntos)
+
+```bash
+cp backend/.env.example backend/.env
+docker compose up --build
+```
+
+Veja [DEPLOYMENT.md](DEPLOYMENT.md) para detalhes e opções de deploy na nuvem.
+
+### 🧪 Rodando os testes do backend
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
 
 ## 🔐 Autenticação JWT
 
@@ -181,6 +208,8 @@ A aplicação estará disponível em: `http://localhost:3000`
 - ✅ Estrutura modular e extensível
 - ✅ Segurança com hashing de senhas e JWT
 - ✅ CORS configurado
+- ✅ Testes automatizados do backend (pytest)
+- ✅ Pronto para rodar em Docker
 
 ## 🔧 Configurações
 
@@ -198,11 +227,19 @@ Edite o arquivo `.env` no backend para customizar:
 - [ ] Recuperação de senha
 - [ ] Compartilhamento de notas
 - [ ] Temas escuro/claro
-- [ ] Testes automatizados
-- [ ] Deploy em produção
+- [x] Testes automatizados (backend)
+- [x] Deploy (ver [DEPLOYMENT.md](DEPLOYMENT.md))
+- [ ] Testes automatizados do frontend
+
+## 📚 Documentação
+
+- [QUICKSTART.md](QUICKSTART.md) — para começar em 5 minutos
+- [DEVELOPMENT.md](DEVELOPMENT.md) — guia técnico detalhado
+- [DEPLOYMENT.md](DEPLOYMENT.md) — Docker e deploy na nuvem
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — FAQ e debugging
+- [STRUCTURE.md](STRUCTURE.md) — visão geral da estrutura
+- [ROADMAP.md](ROADMAP.md) — planos futuros
 
 ## 📄 Licença
 
 Este projeto é fornecido como está para fins educacionais.
-# sistema-de-cadastro-e-jogos
-Uma plataforma full-stack com autenticação de usuários, gerenciamento de notas e mini-games (Snake e Calculadora).

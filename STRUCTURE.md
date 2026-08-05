@@ -1,27 +1,35 @@
 # 📂 Estrutura do Projeto - Visão Completa
 
 ```
-Calculadora/
+sistema-de-cadastro-e-jogos/
 │
 ├── 📖 DOCUMENTAÇÃO
 │   ├── README.md                 ← Começar aqui!
 │   ├── QUICKSTART.md             ← Iniciar rápido
 │   ├── DEVELOPMENT.md            ← Guia técnico detalhado
+│   ├── DEPLOYMENT.md             ← Docker e deploy na nuvem
 │   ├── TROUBLESHOOTING.md        ← FAQ e debugging
 │   ├── ROADMAP.md                ← Futuro do projeto
 │   └── STRUCTURE.md              ← Este arquivo
 │
 ├── 🚀 SCRIPTS
 │   ├── start.bat                 ← Iniciar (Windows)
-│   └── start.sh                  ← Iniciar (Linux/Mac)
+│   ├── start.sh                  ← Iniciar (Linux/Mac)
+│   └── docker-compose.yml        ← Iniciar tudo via Docker
 │
 ├── 🔙 BACKEND (FastAPI + SQLite)
 │   │
-│   ├── main.py                   ← Entrada do backend
-│   ├── run.py                    ← Alternativa para rodar
-│   ├── requirements.txt          ← Dependências Python
+│   ├── main.py                   ← `python main.py` sobe o servidor de dev
+│   ├── requirements.txt          ← Dependências Python (runtime)
+│   ├── requirements-dev.txt      ← + pytest/httpx para testes
+│   ├── Dockerfile
 │   ├── .env                      ← Configurações (local)
 │   ├── .env.example              ← Template .env
+│   │
+│   ├── tests/                    ← Testes automatizados (pytest)
+│   │   ├── conftest.py           ← Fixtures (client, banco de testes)
+│   │   ├── test_auth.py
+│   │   └── test_notes.py
 │   │
 │   └── app/
 │       │
@@ -54,15 +62,15 @@ Calculadora/
 │       │   ├── auth.py           ← Endpoints /auth/
 │       │   └── notes.py          ← Endpoints /notes/
 │       │
-│       ├── 📊 main.py            ← FastAPI app principal
+│       ├── 📊 main.py            ← FastAPI app principal (fonte da verdade)
 │       └── __init__.py
 │
 ├── 🎨 FRONTEND (React + Material UI)
 │   │
 │   ├── package.json              ← Dependências Node
+│   ├── Dockerfile
 │   ├── .env                      ← API URL (local)
 │   ├── .env.example              ← Template .env
-│   ├── tsconfig.json             ← Config TypeScript
 │   │
 │   ├── public/
 │   │   └── index.html            ← HTML principal
@@ -89,8 +97,7 @@ Calculadora/
 │       │   └── ProtectedRoute.js  ← Rota protegida
 │       │
 │       ├── index.js               ← Entrada React (main)
-│       ├── index.css              ← Estilos globais
-│       └── __init__.js
+│       └── index.css              ← Estilos globais
 │
 └── 🔧 CONFIGURAÇÃO
     └── .gitignore                ← Arquivos ignorados git
