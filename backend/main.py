@@ -1,49 +1,17 @@
 """
-Aplicação principal FastAPI
+Ponto de entrada para rodar o servidor de desenvolvimento.
+
+A aplicação FastAPI em si vive em `app/main.py` (é o que o Uvicorn importa
+como "app.main:app"); este arquivo só existe para permitir `python main.py`
+a partir da pasta `backend/`, com auto-reload ligado.
 """
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.core.config import settings
-from app.database.database import engine, Base
-from app.routes import auth, notes
-
-# Criar tabelas no banco de dados
-Base.metadata.create_all(bind=engine)
-
-# Criar aplicação FastAPI
-app = FastAPI(
-    title=settings.API_TITLE,
-    description=settings.API_DESCRIPTION,
-    version=settings.API_VERSION
-)
-
-# Configurar CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Incluir rotas
-app.include_router(auth.router)
-app.include_router(notes.router)
-
-@app.get("/")
-def read_root():
-    """Endpoint raiz da API"""
-    return {
-        "message": "Bem-vindo ao Sistema de Cadastro e Funcionalidades",
-        "version": settings.API_VERSION,
-        "docs": "/docs"
-    }
-
-@app.get("/health")
-def health_check():
-    """Endpoint para verificar saúde da aplicação"""
-    return {"status": "healthy"}
+import uvicorn
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info",
+    )
