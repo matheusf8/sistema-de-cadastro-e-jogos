@@ -2,6 +2,16 @@
 
 Um sistema completo de cadastro e login com FastAPI no backend e React no frontend, incluindo Calculadora, Bloco de Notas e Jogo da Cobrinha.
 
+## 📸 Demonstração
+
+| Login | Cadastro |
+|---|---|
+| ![Login](docs/screenshots/login.jpg) | ![Cadastro](docs/screenshots/cadastro.jpg) |
+
+| Calculadora | Bloco de Notas | Jogo da Cobrinha |
+|---|---|---|
+| ![Calculadora](docs/screenshots/calculadora.jpg) | ![Bloco de Notas](docs/screenshots/bloco-notas.jpg) | ![Jogo da Cobrinha](docs/screenshots/jogo-cobrinha.jpg) |
+
 ## 📋 Estrutura do Projeto
 
 ```
