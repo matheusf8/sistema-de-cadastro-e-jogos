@@ -1,16 +1,27 @@
-# Sistema de Cadastro e Funcionalidades
+# Chat com Documentos (RAG)
 
-Um sistema completo de cadastro e login com FastAPI no backend e React no frontend, incluindo Calculadora, Bloco de Notas e Jogo da Cobrinha.
+Envie um PDF ou arquivo de texto, faça perguntas sobre o conteúdo e receba
+respostas geradas por IA (Claude), baseadas apenas no que está no documento
+— com autenticação de usuários via JWT.
 
-## 📸 Demonstração
+É um exemplo de **RAG (Retrieval-Augmented Generation)**: em vez de mandar
+o documento inteiro pra IA a cada pergunta, o texto é quebrado em pedaços,
+cada pedaço vira um vetor (embedding), e só os pedaços mais relevantes para
+a pergunta feita são enviados como contexto pro modelo.
 
-| Login | Cadastro |
-|---|---|
-| ![Login](docs/screenshots/login.jpg) | ![Cadastro](docs/screenshots/cadastro.jpg) |
+## 📋 Como funciona
 
-| Calculadora | Bloco de Notas | Jogo da Cobrinha |
-|---|---|---|
-| ![Calculadora](docs/screenshots/calculadora.jpg) | ![Bloco de Notas](docs/screenshots/bloco-notas.jpg) | ![Jogo da Cobrinha](docs/screenshots/jogo-cobrinha.jpg) |
+```
+1. Upload do documento (PDF, .txt ou .md)
+2. Backend extrai o texto e quebra em trechos (chunks)
+3. Cada trecho vira um vetor numérico (embedding), gerado localmente
+   — sem custo de API externa
+4. Trechos e vetores ficam guardados no banco (SQLite)
+5. Ao perguntar algo, o backend busca os trechos mais parecidos com a
+   pergunta (similaridade de cosseno) e manda só eles pra API da Claude
+6. A resposta vem baseada apenas nesse contexto — se a informação não
+   estiver no documento, a IA diz isso em vez de inventar
+```
 
 ## 📋 Estrutura do Projeto
 
@@ -25,43 +36,44 @@ sistema-de-cadastro-e-jogos/
 │   │   │   └── database.py        # Configuração do banco de dados
 │   │   ├── models/
 │   │   │   ├── user.py            # Modelo de usuário
-│   │   │   └── note.py            # Modelo de nota
-│   │   ├── schemas/
-│   │   │   ├── user.py            # Schemas de validação de usuário
-│   │   │   └── note.py            # Schemas de validação de nota
+│   │   │   ├── document.py        # Modelo de documento e trecho (chunk)
+│   │   │   └── chat.py            # Modelo de sessão de chat e mensagem
+│   │   ├── schemas/                # Schemas de validação (Pydantic)
 │   │   ├── services/
-│   │   │   ├── user_service.py    # Lógica de negócio de usuário
-│   │   │   └── note_service.py    # Lógica de negócio de nota
+│   │   │   ├── user_service.py     # Lógica de negócio de usuário
+│   │   │   ├── embedding_service.py # Geração de embeddings locais
+│   │   │   ├── document_service.py  # Extração de texto, chunking, indexação
+│   │   │   └── rag_service.py       # Busca por similaridade + chamada à Claude
 │   │   ├── routes/
-│   │   │   ├── auth.py            # Rotas de autenticação
-│   │   │   └── notes.py           # Rotas de notas
-│   │   └── main.py                # Aplicação FastAPI (fonte da verdade)
-│   ├── tests/                     # Testes automatizados (pytest)
-│   ├── main.py                    # `python main.py` sobe o servidor de dev
-│   ├── requirements.txt           # Dependências Python
+│   │   │   ├── auth.py             # Rotas de autenticação
+│   │   │   ├── documents.py        # Rotas de documentos
+│   │   │   └── chat.py             # Rotas de chat
+│   │   └── main.py                 # Aplicação FastAPI (fonte da verdade)
+│   ├── tests/                      # Testes automatizados (pytest)
+│   ├── main.py                     # `python main.py` sobe o servidor de dev
+│   ├── requirements.txt            # Dependências Python
 │   ├── Dockerfile
-│   └── .env                       # Variáveis de ambiente (local, fora do git)
+│   └── .env                        # Variáveis de ambiente (local, fora do git)
 │
 └── frontend/
     ├── public/
     │   └── index.html
     ├── src/
     │   ├── components/
-    │   │   ├── Calculator.js       # Componente de calculadora
-    │   │   ├── NoteBlock.js        # Componente de bloco de notas
-    │   │   └── SnakeGame.js        # Componente do jogo da cobrinha
+    │   │   ├── DocumentUpload.js   # Upload e lista de documentos
+    │   │   └── ChatInterface.js    # Interface de chat
     │   ├── pages/
-    │   │   ├── Login.js            # Página de login
-    │   │   ├── Register.js         # Página de registro
-    │   │   └── Dashboard.js        # Dashboard principal
+    │   │   ├── Login.js
+    │   │   ├── Register.js
+    │   │   └── Dashboard.js
     │   ├── context/
     │   │   └── AuthContext.js      # Context de autenticação
     │   ├── services/
     │   │   └── api.js              # Serviço de API
     │   ├── utils/
     │   │   └── ProtectedRoute.js   # Rota protegida
-    │   ├── index.js                # Entrada da aplicação React
-    │   └── index.css               # Estilos globais
+    │   ├── index.js
+    │   └── index.css
     ├── Dockerfile
     └── package.json
 ```
@@ -69,25 +81,42 @@ sistema-de-cadastro-e-jogos/
 ## 🚀 Como Executar
 
 ### Pré-requisitos
-- Python 3.8+
-- Node.js 14+
-- pip e npm
+- Python 3.10+
+- Node.js 18+
+- Uma chave de API da Anthropic ([console.anthropic.com](https://console.anthropic.com/settings/keys)) — sem ela o chat não responde
+- **Recomendado:** rode o backend dentro de um ambiente virtual (`venv`). O
+  projeto instala `sentence-transformers` (que traz o PyTorch), uma
+  dependência relativamente pesada — isolar evita conflito com outros
+  projetos Python que você tenha na máquina.
 
 ### Backend
 
-1. **Configurar variáveis de ambiente**
+1. **Criar e ativar um ambiente virtual (recomendado)**
 ```bash
 cd backend
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+```
+
+2. **Configurar variáveis de ambiente**
+```bash
 cp .env.example .env
 ```
-(os valores padrão já funcionam localmente; para produção, troque o `SECRET_KEY`)
+Edite o `.env` e preencha `ANTHROPIC_API_KEY` com sua chave. O resto dos
+valores padrão já funciona localmente.
 
-2. **Instalar dependências**
+3. **Instalar dependências**
 ```bash
 pip install -r requirements.txt
 ```
+> A primeira instalação baixa o PyTorch e demora alguns minutos. Na
+> primeira vez que um documento for enviado, o modelo de embeddings
+> (`all-MiniLM-L6-v2`, ~90MB) também é baixado automaticamente.
 
-3. **Executar servidor FastAPI**
+4. **Executar servidor FastAPI**
 ```bash
 python main.py
 ```
@@ -115,10 +144,13 @@ A aplicação estará disponível em: `http://localhost:3000`
 
 ```bash
 cp backend/.env.example backend/.env
+# edite backend/.env e preencha ANTHROPIC_API_KEY antes de subir
 docker compose up --build
 ```
 
-Veja [DEPLOYMENT.md](DEPLOYMENT.md) para detalhes e opções de deploy na nuvem.
+> A imagem do backend inclui PyTorch, então o build inicial é mais lento e
+> a imagem final é maior do que um backend FastAPI comum — normal para um
+> projeto com embeddings locais.
 
 ### 🧪 Rodando os testes do backend
 
@@ -127,12 +159,14 @@ cd backend
 pip install -r requirements-dev.txt
 pytest
 ```
+Os testes usam funções fake no lugar do modelo de embeddings real e da API
+da Claude — rodam rápido e não gastam créditos nem baixam modelos.
 
 ## 🔐 Autenticação JWT
 
 - Login retorna um token JWT que deve ser enviado no header `Authorization: Bearer <token>`
 - Token expira em 30 minutos (configurável)
-- Todas as rotas de notas requerem autenticação
+- Todas as rotas de documentos e chat requerem autenticação
 
 ## 📚 Endpoints da API
 
@@ -141,31 +175,16 @@ pytest
 - `POST /auth/login` - Fazer login
 - `GET /auth/me` - Obter dados do usuário autenticado
 
-### Notas (requer autenticação)
-- `GET /notes/` - Listar todas as notas do usuário
-- `POST /notes/` - Criar nova nota
-- `GET /notes/{id}` - Obter uma nota específica
-- `PUT /notes/{id}` - Atualizar nota
-- `DELETE /notes/{id}` - Deletar nota
+### Documentos (requer autenticação)
+- `POST /documents/upload` - Enviar um documento (PDF, .txt ou .md)
+- `GET /documents/` - Listar os documentos do usuário
+- `DELETE /documents/{id}` - Remover um documento
 
-## 🎮 Funcionalidades
-
-### 1. Calculadora
-- Operações básicas: adição, subtração, multiplicação e divisão
-- Interface limpa e responsiva
-- Suporte a números decimais
-
-### 2. Bloco de Notas
-- CRUD completo de notas
-- Persistência em banco de dados SQLite
-- Interface intuitiva com edição e exclusão
-- Organização por usuário
-
-### 3. Jogo da Cobrinha
-- Versão clássica do jogo
-- Controles com setas ou WASD
-- Sistema de pontuação
-- Colisão com as bordas (wrap-around)
+### Chat (requer autenticação)
+- `POST /chat/sessions` - Criar uma sessão de chat associada a um documento
+- `GET /chat/sessions` - Listar as sessões de chat do usuário
+- `GET /chat/sessions/{id}/messages` - Listar o histórico de uma sessão
+- `POST /chat/sessions/{id}/messages` - Enviar uma pergunta e receber a resposta da IA
 
 ## 🏗️ Arquitetura
 
@@ -173,7 +192,10 @@ pytest
 - **FastAPI**: Framework web moderno e rápido
 - **SQLAlchemy**: ORM para banco de dados
 - **JWT**: Autenticação e autorização
-- **SQLite**: Banco de dados leve e portável
+- **SQLite**: Banco de dados leve e portável (guarda também os embeddings, como JSON)
+- **sentence-transformers**: Geração de embeddings localmente, sem custo de API
+- **pypdf**: Extração de texto de arquivos PDF
+- **Anthropic SDK**: Chamadas à API da Claude para gerar as respostas
 
 ### Frontend
 - **React**: Biblioteca de UI
@@ -186,69 +208,52 @@ pytest
 ### Modelos
 
 **User**
-- id (PK)
-- username (único)
-- email (único)
-- full_name
-- hashed_password
-- created_at
-- updated_at
+- id (PK), username (único), email (único), full_name, hashed_password, created_at, updated_at
 
-**Note**
-- id (PK)
-- title
-- content
-- user_id (FK)
-- created_at
-- updated_at
+**Document**
+- id (PK), user_id (FK), filename, content_type, status (`processing`/`ready`/`error`), error_message, chunk_count, created_at
 
-## 🎨 Design
+**DocumentChunk**
+- id (PK), document_id (FK), chunk_index, content, embedding (vetor serializado em JSON), created_at
 
-- Interface moderna e responsiva com Material UI
-- Tema consistente em toda a aplicação
-- Layout adaptativo para diferentes tamanhos de tela
-- Componentes reutilizáveis e bem estruturados
+**ChatSession**
+- id (PK), user_id (FK), document_id (FK), title, created_at
 
-## 📝 Boas Práticas
+**Message**
+- id (PK), session_id (FK), role (`user`/`assistant`), content, created_at
 
-- ✅ Separação de camadas (models, services, controllers)
-- ✅ Código bem comentado e organizado
-- ✅ Validação de dados com Pydantic
-- ✅ Tratamento de erros apropriado
-- ✅ Estrutura modular e extensível
-- ✅ Segurança com hashing de senhas e JWT
-- ✅ CORS configurado
-- ✅ Testes automatizados do backend (pytest)
-- ✅ Pronto para rodar em Docker
-
-## 🔧 Configurações
+## ⚙️ Configurações
 
 Edite o arquivo `.env` no backend para customizar:
 - `SECRET_KEY`: Chave secreta para JWT (MUDE EM PRODUÇÃO)
+- `ANTHROPIC_API_KEY`: Chave da API da Claude (**obrigatória** para o chat responder)
+- `CLAUDE_MODEL`: Modelo usado nas respostas (padrão `claude-opus-5`; troque para `claude-haiku-4-5` para reduzir custo em testes)
 - `DATABASE_URL`: URL do banco de dados
+- `UPLOAD_DIR`, `MAX_UPLOAD_SIZE_MB`: onde e até que tamanho os documentos são salvos
+- `EMBEDDING_MODEL`, `CHUNK_SIZE`, `CHUNK_OVERLAP`, `TOP_K_CHUNKS`: parâmetros do pipeline de RAG
 - `ACCESS_TOKEN_EXPIRE_MINUTES`: Tempo de expiração do token
 - `ALLOWED_ORIGINS`: Origens permitidas para CORS
 
-## 🚀 Próximas Melhorias
+## 🎯 Limitações conhecidas (decisões conscientes de escopo)
 
-- [ ] Autenticação com OAuth2
-- [ ] Refresh tokens
-- [ ] Validação de email
-- [ ] Recuperação de senha
-- [ ] Compartilhamento de notas
-- [ ] Temas escuro/claro
-- [x] Testes automatizados (backend)
-- [x] Deploy (ver [DEPLOYMENT.md](DEPLOYMENT.md))
-- [ ] Testes automatizados do frontend
+- **Sem streaming**: a resposta da IA chega de uma vez, não token a token. Dá pra adicionar depois com Server-Sent Events.
+- **Sem banco vetorial dedicado**: a busca por similaridade é feita "na unha" com numpy, carregando todos os chunks do documento a cada pergunta. Funciona bem na escala de um projeto de portfólio; para volumes grandes, um banco como Chroma ou pgvector seria o próximo passo.
+- **Upload é síncrono**: o processamento (extração + chunking + embeddings) acontece dentro da própria requisição de upload, então arquivos grandes demoram alguns segundos para responder.
+
+## 📝 Boas Práticas
+
+- ✅ Separação de camadas (models, services, routes)
+- ✅ Código bem comentado e organizado
+- ✅ Validação de dados com Pydantic
+- ✅ Tratamento de erros apropriado (inclusive falhas da API externa)
+- ✅ Segurança com hashing de senhas e JWT
+- ✅ CORS configurado
+- ✅ Testes automatizados do backend (pytest), sem depender de API externa ou modelo real
+- ✅ Pronto para rodar em Docker
 
 ## 📚 Documentação
 
-- [QUICKSTART.md](QUICKSTART.md) — para começar em 5 minutos
-- [DEVELOPMENT.md](DEVELOPMENT.md) — guia técnico detalhado
-- [DEPLOYMENT.md](DEPLOYMENT.md) — Docker e deploy na nuvem
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — FAQ e debugging
-- [STRUCTURE.md](STRUCTURE.md) — visão geral da estrutura
-- [ROADMAP.md](ROADMAP.md) — planos futuros
+- [PLANO_DESENVOLVIMENTO.md](PLANO_DESENVOLVIMENTO.md) — plano de desenvolvimento do projeto, por fases
 
 ## 📄 Licença
 

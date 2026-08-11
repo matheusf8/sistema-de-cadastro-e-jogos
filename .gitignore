@@ -51,6 +51,11 @@ yarn-error.log
 /frontend/build/
 /frontend/dist/
 
+# Uploads e modelos baixados localmente
+/backend/uploads/
+/backend/.cache/
+sentence_transformers_cache/
+
 # Misc
 .cache/
 .pytest_cache/

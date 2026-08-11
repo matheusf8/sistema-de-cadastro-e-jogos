@@ -23,7 +23,8 @@ class User(Base):
     updated_at = Column(DateTime, default=utcnow, onupdate=utcnow)
     
     # Relacionamentos
-    notes = relationship("Note", back_populates="owner", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="owner", cascade="all, delete-orphan")
+    chat_sessions = relationship("ChatSession", back_populates="owner", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User {self.username}>"

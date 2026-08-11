@@ -32,13 +32,27 @@ export const authAPI = {
   getCurrentUser: () => api.get('/auth/me'),
 };
 
-// ===== NOTES =====
-export const notesAPI = {
-  createNote: (noteData) => api.post('/notes/', noteData),
-  getNotes: (skip = 0, limit = 100) => api.get('/notes/', { params: { skip, limit } }),
-  getNote: (noteId) => api.get(`/notes/${noteId}`),
-  updateNote: (noteId, noteData) => api.put(`/notes/${noteId}`, noteData),
-  deleteNote: (noteId) => api.delete(`/notes/${noteId}`),
+// ===== DOCUMENTS =====
+export const documentsAPI = {
+  upload: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/documents/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  list: () => api.get('/documents/'),
+  remove: (documentId) => api.delete(`/documents/${documentId}`),
+};
+
+// ===== CHAT =====
+export const chatAPI = {
+  createSession: (documentId, title) =>
+    api.post('/chat/sessions', { document_id: documentId, title }),
+  listSessions: () => api.get('/chat/sessions'),
+  listMessages: (sessionId) => api.get(`/chat/sessions/${sessionId}/messages`),
+  sendMessage: (sessionId, content) =>
+    api.post(`/chat/sessions/${sessionId}/messages`, { content }),
 };
 
 export default api;

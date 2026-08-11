@@ -4,11 +4,13 @@ Arquivo principal da aplicação FastAPI
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.config import settings
-from app.database.database import engine, Base
-from app.routes import auth, notes
+from app.database.database import Base, engine
+from app.models.chat import ChatSession, Message
+from app.models.document import Document, DocumentChunk
 from app.models.user import User
-from app.models.note import Note
+from app.routes import auth, chat, documents
 
 # Criar tabelas no banco de dados
 Base.metadata.create_all(bind=engine)
@@ -19,7 +21,7 @@ app = FastAPI(
     description=settings.API_DESCRIPTION,
     version=settings.API_VERSION,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # Configurar CORS
@@ -33,23 +35,28 @@ app.add_middleware(
 
 # Incluir rotas
 app.include_router(auth.router)
-app.include_router(notes.router)
+app.include_router(documents.router)
+app.include_router(chat.router)
+
 
 @app.get("/")
 def read_root():
     """Endpoint raiz da API"""
     return {
-        "message": "Bem-vindo ao Sistema de Cadastro e Funcionalidades",
+        "message": "Bem-vindo à API de Chat com Documentos (RAG)",
         "version": settings.API_VERSION,
         "docs": "/docs",
-        "redoc": "/redoc"
+        "redoc": "/redoc",
     }
+
 
 @app.get("/health")
 def health_check():
     """Endpoint para verificar saúde da aplicação"""
     return {"status": "healthy"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
