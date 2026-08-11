@@ -124,15 +124,23 @@ mais relevantes do documento e responde usando a API da Claude.
 
 ## 5. Status atual
 
-**Projeto funcionalmente completo e testado de ponta a ponta no navegador
-de verdade** (não só testes automatizados): cadastro, login, upload de
-documento real (extração + chunking + embeddings rodando de verdade),
-tentativa de pergunta no chat, **exclusão de documento** e **logout** —
-todos confirmados via tráfego de rede real, não só leitura de código.
+**Projeto 100% funcional, testado de ponta a ponta no navegador com IA
+real.** Fluxo completo confirmado: cadastro, login, upload de documento
+real (extração + chunking + embeddings rodando de verdade), **duas
+perguntas reais respondidas corretamente pela Claude** (`claude-haiku-4-5`)
+com base apenas no conteúdo do documento — incluindo histórico de
+conversa mantido entre perguntas —, exclusão de documento e logout.
 
-**Fase 5 quase completa** — falta só preencher a chave real da Anthropic
-pra ver uma resposta de verdade (o resto do fluxo já está 100% verificado
-sem ela) e, opcionalmente, screenshots e build Docker. Ver seção 6.
+Exemplo real de pergunta e resposta (documento de teste: manual fictício
+do "Nébula X200"):
+
+> **Pergunta:** Qual o tempo de garantia do produto?
+> **Resposta:** De acordo com o documento, o Nébula X200 possui garantia
+> de 24 meses a partir da data de compra. A garantia cobre defeitos de
+> fabricação, mas não cobre danos causados por mau uso ou instalação fora
+> das especificações recomendadas no Capítulo 1 do manual.
+
+Só ficaram pendências opcionais/de polimento — ver seção 6.
 
 **Bug real encontrado e corrigido durante o teste manual:** sem
 `ANTHROPIC_API_KEY` configurada, a pergunta no chat **travava a interface
@@ -151,13 +159,10 @@ também falhar rápido em vez de travar. Testes de regressão adicionados em
 Coisas que foram deliberadamente deixadas para depois, ou que precisam de
 uma pessoa (não dá pra verificar sozinho):
 
-1. **Chave da Anthropic** — o `.env` está com `ANTHROPIC_API_KEY` vazio.
-   Sem preencher, **todo o resto do fluxo funciona perfeitamente**
-   (verificado ao vivo: cadastro, login, upload real, exclusão de
-   documento, logout), mas qualquer pergunta no chat retorna erro claro em
-   vez de resposta — precisa de uma chave real em
-   https://console.anthropic.com/settings/keys para ver a resposta da IA
-   de verdade. Este é o único item que só o dono do projeto pode resolver.
+1. ~~**Chave da Anthropic**~~ ✅ resolvido — chave real configurada e
+   testada com sucesso (duas perguntas reais, respostas corretas). Modelo
+   em uso: `claude-haiku-4-5` (mais barato; trocar para `claude-opus-5` no
+   `.env` quando quiser a qualidade padrão do projeto).
 2. **Build Docker não testado de verdade** — tentei `docker compose build`
    e o Docker Desktop não estava rodando no momento (daemon inativo). Os
    Dockerfiles/compose não foram alterados na lógica, só o
