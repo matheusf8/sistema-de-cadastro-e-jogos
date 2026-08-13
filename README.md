@@ -26,7 +26,7 @@ a pergunta feita são enviados como contexto pro modelo.
 ## 📋 Estrutura do Projeto
 
 ```
-sistema-de-cadastro-e-jogos/
+chat-com-documentos/
 ├── backend/
 │   ├── app/
 │   │   ├── core/

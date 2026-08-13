@@ -1,3 +1,5 @@
+name: chat-com-documentos
+
 services:
   backend:
     build: ./backend
