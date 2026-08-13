@@ -257,4 +257,4 @@ Edite o arquivo `.env` no backend para customizar:
 
 ## 📄 Licença
 
-Este projeto é fornecido como está para fins educacionais.
+MIT — veja [LICENSE](./LICENSE).
